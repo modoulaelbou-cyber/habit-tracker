@@ -1,0 +1,438 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0a1730">
+<title>Habit Tracker 2026-2027</title>
+<style>
+:root{--bg:#0a1730;--panel:#102544;--panel2:#0c1d38;--line:#1f3b66;--txt:#e8f0ff;--mut:#8fa8cf;--acc:#4da3ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding-bottom:40px}
+.wrap{max-width:1100px;margin:0 auto}
+header{padding:16px 14px 4px}
+header h1{margin:0;font-size:22px}
+header p{margin:2px 0 0;color:var(--mut);font-size:13px}
+.tabs{display:flex;gap:6px;overflow-x:auto;padding:10px 14px;position:relative;scrollbar-width:none}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:0 0 auto;background:var(--panel);color:var(--mut);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font:inherit;font-size:13px;cursor:pointer}
+.tab.on{background:var(--acc);color:#06142b;border-color:var(--acc);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px;margin:12px 14px}
+.card h2{margin:0 0 10px;font-size:15px;letter-spacing:.04em;text-transform:uppercase;color:var(--mut)}
+.top{display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;flex:1;min-width:200px}
+.st{background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.st small{display:block;color:var(--mut);font-size:11px;text-transform:uppercase}
+.st b{font-size:20px}
+.donut{--p:0;width:120px;height:120px;border-radius:50%;background:conic-gradient(var(--acc) calc(var(--p)*1%),#1b3358 0);display:grid;place-items:center;flex:0 0 auto}
+.donut div{width:84px;height:84px;border-radius:50%;background:var(--panel);display:grid;place-items:center;font-size:20px;font-weight:700}
+.gridwrap{overflow-x:auto;-webkit-overflow-scrolling:touch;border-radius:10px;border:1px solid var(--line);position:relative}
+table.g{border-collapse:separate;border-spacing:0;width:max-content;min-width:100%}
+.g th,.g td{padding:0;text-align:center;border-bottom:1px solid var(--line);border-right:1px solid #16315a;font-weight:500}
+.g td,.g th.d{min-width:34px;width:34px}
+.g .hcol,.g .hn{position:sticky;left:0;z-index:2;background:var(--panel2);text-align:left;padding:4px 10px;min-width:150px;max-width:150px;border-right:2px solid var(--line);font-size:13px;line-height:1.2}
+.g tbody tr{height:44px}
+.g thead th{background:#0a1426;height:26px;font-size:11px;color:var(--mut)}
+.g thead .hcol{font-size:14px;color:var(--txt);z-index:3;background:#0a1426}
+.g .wk{color:var(--txt);font-size:12px}
+.g .ws{border-left:2px solid var(--line)}
+.g .we{color:#6f8fc0}
+.g .today{background:rgba(77,163,255,.16)}
+.g thead .today{color:var(--acc);font-weight:700}
+.g tfoot td,.g tfoot th{height:30px;font-size:12px;color:var(--mut);border-bottom:0}
+.g tfoot .hn{height:30px}
+.cb{-webkit-appearance:none;appearance:none;width:22px;height:22px;border:2px solid #3a5f96;border-radius:6px;background:transparent;margin:auto;display:block;cursor:pointer}
+.cb:checked{background-color:var(--acc);border-color:var(--acc);background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'><path d='M5 12.5l4.5 4.5L19 7.5' fill='none' stroke='%230a1730' stroke-width='3.2' stroke-linecap='round' stroke-linejoin='round'/></svg>")}
+.cb:disabled{opacity:.2;cursor:default}
+.bars{display:flex;gap:3px;height:130px}
+.bcol{flex:1;display:flex;flex-direction:column;min-width:0;text-align:center}
+.bar{flex:1;display:flex;align-items:flex-end;background:var(--panel2);border-radius:4px;overflow:hidden}
+.bar i{display:block;width:100%;background:var(--acc)}
+.bcol span{font-size:9px;color:var(--mut);margin-top:3px;line-height:1.1}
+.bcol.today span{color:var(--acc);font-weight:700}
+.bars.big{height:160px;gap:8px}
+.bars.big span{font-size:11px}
+.tblw{overflow-x:auto}
+table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+.tbl th{color:var(--mut);font-weight:500;font-size:11px;text-transform:uppercase;text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)}
+.tbl td{padding:8px;border-bottom:1px solid #16315a}
+.pb{background:var(--panel2);border-radius:99px;height:10px;overflow:hidden;min-width:80px}
+.pb i{display:block;height:100%;background:var(--acc)}
+.rank{display:flex;flex-direction:column;gap:6px}
+.rank div{display:flex;gap:10px;align-items:center;background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font-size:13px}
+.rank em{font-style:normal;color:var(--acc);font-weight:700;width:22px}
+.rank span{flex:1}
+.btns{display:flex;gap:8px;flex-wrap:wrap;margin:12px 14px}
+.btn{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:10px;padding:9px 14px;font:inherit;font-size:13px;cursor:pointer}
+.btn.pri{background:var(--acc);color:#06142b;border-color:var(--acc);font-weight:700}
+dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;width:min(92vw,440px);padding:16px}
+dialog::backdrop{background:rgba(0,0,0,.6)}
+.hrow{display:flex;gap:6px;margin-bottom:6px}
+.hrow input{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
+.hrow .x{background:var(--panel2);color:#ff8d8d;border:1px solid var(--line);border-radius:8px;width:38px;cursor:pointer}
+.hint{color:var(--mut);font-size:12px;margin:0 0 10px}
+.muted{color:var(--mut);font-size:12px}
+@media(max-width:600px){.g .hcol,.g .hn{min-width:128px;max-width:128px;font-size:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header>
+  <h1>🎯 Habit Tracker</h1>
+  <p>Octobre 2026 → Septembre 2027</p>
+</header>
+<div id="app"></div>
+<div class="btns">
+  <button class="btn pri" data-act="settings">⚙ Modifier les habitudes</button>
+  <button class="btn" data-act="export">💾 Sauvegarder</button>
+  <button class="btn" data-act="import">📂 Restaurer</button>
+  <button class="btn" data-act="sync">☁ Synchroniser</button>
+  <input type="file" id="file" accept="application/json" hidden>
+</div>
+<p class="muted" id="sstat" style="margin:0 14px 6px">☁ Synchronisation non configurée</p>
+<p class="muted" style="margin:0 14px">Tes données sont enregistrées dans ce navigateur. Fais une sauvegarde de temps en temps pour ne rien perdre.</p>
+</div>
+
+<dialog id="sdlg">
+  <h3 style="margin-top:0">☁ Synchronisation</h3>
+  <p class="hint">Colle ton jeton GitHub (permission « gist »). Il reste uniquement sur cet appareil. À faire une fois sur chaque appareil, avec le même jeton.</p>
+  <input id="stoken" type="password" autocomplete="off" placeholder="ghp_..." style="width:100%;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:10px;font:inherit">
+  <div style="display:flex;gap:8px;margin-top:12px;flex-wrap:wrap">
+    <button class="btn" type="button" data-act="slogout">Désactiver</button>
+    <span style="flex:1"></span>
+    <button class="btn" type="button" data-act="scancel">Annuler</button>
+    <button class="btn pri" type="button" data-act="ssave">Enregistrer</button>
+  </div>
+</dialog>
+
+<dialog id="dlg">
+  <h3 style="margin-top:0">Mes habitudes</h3>
+  <p class="hint">Renomme (tu peux mettre un emoji), supprime ou ajoute. Supprimer une habitude l'enlève des stats.</p>
+  <div id="hlist"></div>
+  <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+    <button class="btn" type="button" data-act="addh">+ Ajouter</button>
+    <span style="flex:1"></span>
+    <button class="btn" type="button" data-act="cancel">Annuler</button>
+    <button class="btn pri" type="button" data-act="saveh">Enregistrer</button>
+  </div>
+</dialog>
+
+<script>
+(()=>{
+const MONTHS=['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+const SHORT=['Janv','Févr','Mars','Avr','Mai','Juin','Juil','Août','Sept','Oct','Nov','Déc'];
+const DAYS=['L','M','M','J','V','S','D'];
+const START={y:2026,m:9};
+const KEY='habit-tracker-oct2026-v1';
+const DEFAULTS=[
+ {id:'h1',name:'😴 8h de sommeil (avant Fajr)'},
+ {id:'h2',name:'💪 Entraînement'},
+ {id:'h3',name:'📖 Lecture Coran'},
+ {id:'h4',name:'📚 Lecture livre'},
+ {id:'h5',name:'🚫 NG'},
+ {id:'h6',name:'🛒 Ecom'},
+ {id:'h7',name:'📵 Pas de scroll'}
+];
+const pad=n=>String(n).padStart(2,'0');
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pct=(a,b)=>b?Math.min(100,Math.round(a/b*100)):0;
+const $=s=>document.querySelector(s);
+
+let state=null;
+try{state=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!state||!Array.isArray(state.habits)||typeof state.done!=='object'||!state.done){
+  state={habits:DEFAULTS.map(h=>({...h})),done:{},dt:{},ht:0};
+}
+state.dt=state.dt||{};
+state.ht=state.ht||0;
+Object.keys(state.done).forEach(k=>{if(!state.dt[k])state.dt[k]=Date.now()});
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}};
+save();
+
+const SKEY='habit-tracker-sync-v1',DESC='habit-tracker-data',FILE='habit-tracker.json';
+let SYNC={token:'',gist:''};
+try{SYNC=Object.assign(SYNC,JSON.parse(localStorage.getItem(SKEY))||{})}catch(e){}
+const saveSync=()=>{try{localStorage.setItem(SKEY,JSON.stringify(SYNC))}catch(e){}};
+
+const now=new Date();
+const TODAY=`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}`;
+
+const months=[];
+for(let i=0;i<12;i++){
+  const y=START.y+Math.floor((START.m+i)/12),m=(START.m+i)%12;
+  const days=new Date(y,m+1,0).getDate();
+  const keys=[];
+  for(let d=1;d<=days;d++)keys.push(`${y}-${pad(m+1)}-${pad(d)}`);
+  months.push({y,m,days,keys});
+}
+const ALL=months.flatMap(x=>x.keys);
+
+let view=(()=>{
+  const i=months.findIndex(x=>x.keys.includes(TODAY));
+  return i>=0?i:(TODAY<ALL[0]?0:11);
+})();
+
+const isDone=(k,id)=>(state.done[k]||[]).includes(id);
+const countDay=k=>{const a=state.done[k]||[];return state.habits.filter(h=>a.includes(h.id)).length};
+function toggle(k,id){
+  const arr=state.done[k]||(state.done[k]=[]);
+  const i=arr.indexOf(id);
+  if(i>=0)arr.splice(i,1);else arr.push(id);
+  if(!arr.length)delete state.done[k];
+  state.dt[k]=Date.now();
+  save();
+  queueSync();
+}
+function streaks(id){
+  let best=0,run=0;
+  for(const k of ALL){
+    if(k>TODAY)break;
+    if(isDone(k,id)){run++;best=Math.max(best,run)}else run=0;
+  }
+  let cur=0;
+  let idx=ALL.filter(k=>k<=TODAY).length-1;
+  if(idx>=0&&!isDone(ALL[idx],id))idx--;
+  while(idx>=0&&isDone(ALL[idx],id)){cur++;idx--}
+  return {cur,best};
+}
+
+const tabs=()=>`<nav class="tabs" id="tabs">${months.map((x,i)=>`<button class="tab ${view===i?'on':''}" data-act="view" data-v="${i}">${SHORT[x.m]}${x.m===0?' '+x.y:''}</button>`).join('')}<button class="tab ${view==='year'?'on':''}" data-act="view" data-v="year">📊 Bilan</button></nav>`;
+
+const donut=p=>`<div class="donut" style="--p:${p}"><div>${p}%</div></div>`;
+
+function renderMonth(){
+  const M=months[view],H=state.habits,n=H.length;
+  const el=M.keys.filter(k=>k<=TODAY).length;
+  const doneTotal=M.keys.reduce((s,k)=>s+countDay(k),0);
+  const goal=n*M.days;
+  const p=pct(doneTotal,n*el);
+
+  const wk=[];
+  M.keys.forEach((k,i)=>{
+    const wd=(new Date(M.y,M.m,i+1).getDay()+6)%7;
+    if(!wk.length||wd===0)wk.push([]);
+    wk[wk.length-1].push(i);
+  });
+  const starts=new Set(wk.map(w=>w[0]));
+  const cls=(k,i)=>{
+    const wd=(new Date(M.y,M.m,i+1).getDay()+6)%7;
+    return [k===TODAY?'today':'',wd>=5?'we':'',starts.has(i)&&i>0?'ws':''].join(' ');
+  };
+
+  const head=`<thead>
+    <tr><th class="hcol" rowspan="3">Habitudes</th>${wk.map((w,j)=>`<th class="wk ${j>0?'ws':''}" colspan="${w.length}">Semaine ${j+1}</th>`).join('')}</tr>
+    <tr>${M.keys.map((k,i)=>`<th class="d ${cls(k,i)}">${DAYS[(new Date(M.y,M.m,i+1).getDay()+6)%7]}</th>`).join('')}</tr>
+    <tr>${M.keys.map((k,i)=>`<th class="d ${cls(k,i)}">${i+1}</th>`).join('')}</tr>
+  </thead>`;
+  const body=`<tbody>${H.map(h=>`<tr><th class="hn">${esc(h.name)}</th>${M.keys.map((k,i)=>`<td class="${cls(k,i)}"><input type="checkbox" class="cb" data-k="${k}" data-h="${h.id}" ${isDone(k,h.id)?'checked':''} ${k>TODAY?'disabled':''} aria-label="${esc(h.name)} ${k}"></td>`).join('')}</tr>`).join('')}</tbody>`;
+  const foot=`<tfoot><tr><th class="hn">Total du jour</th>${M.keys.map((k,i)=>`<td class="${cls(k,i)}">${k>TODAY?'':countDay(k)}</td>`).join('')}</tr></tfoot>`;
+
+  const daily=`<div class="bars">${M.keys.map((k,i)=>{
+    const v=(k>TODAY||!n)?0:Math.round(countDay(k)/n*100);
+    return `<div class="bcol ${k===TODAY?'today':''}" title="${v}%"><div class="bar"><i style="height:${v}%"></i></div><span>${i+1}</span></div>`}).join('')}</div>`;
+
+  const weekly=`<div class="bars big">${wk.map((w,j)=>{
+    const days=w.map(i=>M.keys[i]).filter(k=>k<=TODAY);
+    const d=days.reduce((s,k)=>s+countDay(k),0);
+    const v=pct(d,n*days.length);
+    return `<div class="bcol"><div class="bar"><i style="height:${v}%"></i></div><span>S${j+1}<br>${days.length?v+'%':'-'}</span></div>`}).join('')}</div>`;
+
+  const rows=H.map(h=>{
+    const f=M.keys.filter(k=>isDone(k,h.id)).length;
+    const s=streaks(h.id);
+    return {h,f,p:pct(f,el),s};
+  });
+  const analysis=`<div class="tblw"><table class="tbl"><thead><tr><th>Habitude</th><th>Fait</th><th>Progression</th><th>%</th><th>🔥 Série</th><th>🏆 Record</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.h.name)}</td><td>${r.f}/${M.days}</td><td><div class="pb"><i style="width:${r.p}%"></i></div></td><td>${r.p}%</td><td>${r.s.cur} j</td><td>${r.s.best} j</td></tr>`).join('')}</tbody></table></div>`;
+
+  const top=[...rows].sort((a,b)=>b.p-a.p||b.f-a.f);
+  const rank=`<div class="rank">${top.map((r,i)=>`<div><em>${i+1}</em><span>${esc(r.h.name)}</span><b>${r.p}%</b></div>`).join('')}</div>`;
+
+  return `
+  <section class="card"><div class="top">
+    <div style="flex:1;min-width:180px"><h2 style="margin-bottom:2px">${MONTHS[M.m]} ${M.y}</h2><span class="muted">Progression calculée jusqu'à aujourd'hui</span></div>
+    ${donut(p)}
+    <div class="stats">
+      <div class="st"><small>Complétées</small><b>${doneTotal}</b></div>
+      <div class="st"><small>Objectif du mois</small><b>${goal}</b></div>
+      <div class="st"><small>Restant</small><b>${Math.max(0,goal-doneTotal)}</b></div>
+      <div class="st"><small>Habitudes</small><b>${n}</b></div>
+    </div>
+  </div></section>
+  <section class="card"><h2>Grille du mois</h2><div class="gridwrap"><table class="g">${head}${body}${foot}</table></div></section>
+  <section class="card"><h2>Progression quotidienne</h2>${daily}</section>
+  <section class="card"><h2>Progression par semaine</h2>${weekly}</section>
+  <section class="card"><h2>Analyse par habitude</h2>${analysis}</section>
+  <section class="card"><h2>Classement du mois</h2>${rank}</section>`;
+}
+
+function renderYear(){
+  const H=state.habits,n=H.length;
+  const elapsed=ALL.filter(k=>k<=TODAY).length;
+  const doneTotal=ALL.reduce((s,k)=>s+countDay(k),0);
+  const goal=n*ALL.length;
+  const p=pct(doneTotal,n*elapsed);
+
+  const mb=`<div class="bars big">${months.map(M=>{
+    const days=M.keys.filter(k=>k<=TODAY);
+    const d=days.reduce((s,k)=>s+countDay(k),0);
+    const v=pct(d,n*days.length);
+    return `<div class="bcol"><div class="bar"><i style="height:${v}%"></i></div><span>${SHORT[M.m]}<br>${days.length?v+'%':'-'}</span></div>`}).join('')}</div>`;
+
+  const rows=H.map(h=>{
+    const f=ALL.filter(k=>isDone(k,h.id)).length;
+    return {h,f,p:pct(f,elapsed),s:streaks(h.id)};
+  }).sort((a,b)=>b.p-a.p||b.f-a.f);
+
+  const tbl=`<div class="tblw"><table class="tbl"><thead><tr><th>#</th><th>Habitude</th><th>Fait</th><th>Progression</th><th>%</th><th>🔥 Série</th><th>🏆 Record</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.h.name)}</td><td>${r.f}</td><td><div class="pb"><i style="width:${r.p}%"></i></div></td><td>${r.p}%</td><td>${r.s.cur} j</td><td>${r.s.best} j</td></tr>`).join('')}</tbody></table></div>`;
+
+  const bestStreak=rows.reduce((m,r)=>Math.max(m,r.s.best),0);
+  return `
+  <section class="card"><div class="top">
+    <div style="flex:1;min-width:180px"><h2 style="margin-bottom:2px">Bilan de l'année</h2><span class="muted">Oct. 2026 → Sept. 2027, calculé jusqu'à aujourd'hui</span></div>
+    ${donut(p)}
+    <div class="stats">
+      <div class="st"><small>Complétées</small><b>${doneTotal}</b></div>
+      <div class="st"><small>Objectif annuel</small><b>${goal}</b></div>
+      <div class="st"><small>Jours écoulés</small><b>${elapsed}/${ALL.length}</b></div>
+      <div class="st"><small>Meilleure série</small><b>${bestStreak} j</b></div>
+    </div>
+  </div></section>
+  <section class="card"><h2>Progression par mois</h2>${mb}</section>
+  <section class="card"><h2>Stats par habitude</h2>${tbl}</section>`;
+}
+
+function render(){
+  const g=$('.gridwrap');
+  const sx=g?g.scrollLeft:0,sy=window.scrollY;
+  $('#app').innerHTML=tabs()+(view==='year'?renderYear():renderMonth());
+  const g2=$('.gridwrap');
+  if(g2)g2.scrollLeft=sx;
+  window.scrollTo(0,sy);
+}
+function show(v){
+  view=v;render();
+  const g=$('.gridwrap'),t=$('.g thead th.today');
+  if(g&&t)g.scrollLeft=Math.max(0,t.offsetLeft-170);
+  const tb=$('#tabs'),on=$('.tab.on');
+  if(tb&&on)tb.scrollLeft=Math.max(0,on.offsetLeft-30);
+  window.scrollTo(0,0);
+}
+
+const hrow=(id,name)=>`<div class="hrow" data-id="${esc(id)}"><input value="${esc(name)}" maxlength="40"><button class="x" type="button" data-act="delh" aria-label="Supprimer">✕</button></div>`;
+
+document.addEventListener('change',e=>{
+  const c=e.target.closest('.cb');
+  if(c){toggle(c.dataset.k,c.dataset.h);render();}
+  if(e.target.id==='file'&&e.target.files[0]){
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const s=JSON.parse(r.result);
+        if(!Array.isArray(s.habits)||!s.done||typeof s.done!=='object'||s.habits.some(h=>!h.id||!h.name))throw 0;
+        const t=Date.now(),keys=new Set([...Object.keys(state.dt),...Object.keys(state.done),...Object.keys(s.done)]);
+        state=s;state.dt={};keys.forEach(k=>state.dt[k]=t);state.ht=t;
+        save();render();queueSync();
+      }catch(err){alert('Fichier invalide.')}
+    };
+    r.readAsText(e.target.files[0]);
+    e.target.value='';
+  }
+});
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');
+  if(!b)return;
+  const a=b.dataset.act;
+  if(a==='view')show(b.dataset.v==='year'?'year':+b.dataset.v);
+  else if(a==='settings'){$('#hlist').innerHTML=state.habits.map(h=>hrow(h.id,h.name)).join('');$('#dlg').showModal();}
+  else if(a==='addh'){$('#hlist').insertAdjacentHTML('beforeend',hrow('h'+Date.now()+Math.floor(Math.random()*1000),''));}
+  else if(a==='delh'){b.closest('.hrow').remove();}
+  else if(a==='cancel'){$('#dlg').close();}
+  else if(a==='saveh'){
+    const hs=[...document.querySelectorAll('#hlist .hrow')].map(r=>({id:r.dataset.id,name:r.querySelector('input').value.trim()})).filter(h=>h.name);
+    if(!hs.length){alert('Garde au moins une habitude.');return;}
+    state.habits=hs;state.ht=Date.now();save();$('#dlg').close();render();queueSync();
+  }
+  else if(a==='sync'){$('#stoken').value=SYNC.token;$('#sdlg').showModal();}
+  else if(a==='scancel'){$('#sdlg').close();}
+  else if(a==='slogout'){SYNC={token:'',gist:''};saveSync();$('#sdlg').close();setStatus('☁ Synchronisation désactivée');}
+  else if(a==='ssave'){
+    const t=$('#stoken').value.trim();
+    if(!t){alert('Colle ton jeton GitHub.');return;}
+    SYNC.token=t;SYNC.gist='';saveSync();$('#sdlg').close();sync();
+  }
+  else if(a==='export'){
+    const bl=new Blob([JSON.stringify(state)],{type:'application/json'});
+    const l=document.createElement('a');
+    l.href=URL.createObjectURL(bl);l.download='habit-tracker-sauvegarde.json';l.click();
+    setTimeout(()=>URL.revokeObjectURL(l.href),1000);
+  }
+  else if(a==='import'){$('#file').click();}
+});
+
+/* ---------- Synchronisation via un Gist GitHub privé ---------- */
+let syncing=false,again=false,timer=null;
+function setStatus(t){const el=$('#sstat');if(el)el.textContent=t;}
+function queueSync(){if(!SYNC.token)return;clearTimeout(timer);timer=setTimeout(sync,1500);}
+async function gh(path,opt){
+  const res=await fetch('https://api.github.com'+path,Object.assign({},opt,{headers:{'Authorization':'Bearer '+SYNC.token,'Accept':'application/vnd.github+json'}}));
+  if(!res.ok)throw new Error(res.status===401?'Jeton invalide ou expiré':'Erreur GitHub '+res.status);
+  return res.json();
+}
+function merge(rem){
+  if(!rem||!Array.isArray(rem.habits)||!rem.done||typeof rem.done!=='object')return;
+  const rdt=rem.dt||{};
+  const keys=new Set([...Object.keys(state.done),...Object.keys(state.dt),...Object.keys(rem.done),...Object.keys(rdt)]);
+  keys.forEach(k=>{
+    const lt=state.dt[k]||0,rt=rdt[k]||0;
+    if(rt>lt){
+      if(rem.done[k])state.done[k]=rem.done[k];else delete state.done[k];
+      state.dt[k]=rt;
+    }
+  });
+  if((rem.ht||0)>(state.ht||0)){state.habits=rem.habits;state.ht=rem.ht;}
+}
+async function sync(){
+  if(!SYNC.token)return;
+  if(syncing){again=true;return;}
+  syncing=true;setStatus('☁ Synchronisation…');
+  try{
+    if(!SYNC.gist){
+      const list=await gh('/gists?per_page=100');
+      const g=list.find(x=>x.description===DESC&&x.files&&x.files[FILE]);
+      if(g){SYNC.gist=g.id;saveSync();}
+    }
+    if(SYNC.gist){
+      const g=await gh('/gists/'+SYNC.gist);
+      const f=g.files&&g.files[FILE];
+      if(f){
+        let c=f.content;
+        if(f.truncated)c=await (await fetch(f.raw_url)).text();
+        const before=JSON.stringify(state);
+        try{merge(JSON.parse(c))}catch(e){}
+        if(JSON.stringify(state)!==before){save();render();}
+      }
+    }
+    const files={};files[FILE]={content:JSON.stringify(state)};
+    if(SYNC.gist){
+      await gh('/gists/'+SYNC.gist,{method:'PATCH',body:JSON.stringify({files})});
+    }else{
+      const g=await gh('/gists',{method:'POST',body:JSON.stringify({description:DESC,public:false,files})});
+      SYNC.gist=g.id;saveSync();
+    }
+    const d=new Date();
+    setStatus('☁ Synchronisé à '+pad(d.getHours())+':'+pad(d.getMinutes()));
+  }catch(e){
+    setStatus('⚠ '+(e.message||'Erreur de synchronisation'));
+  }finally{
+    syncing=false;
+    if(again){again=false;queueSync();}
+  }
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')sync()});
+
+show(view);
+if(SYNC.token)sync();
+})();
+</script>
+</body>
+</html>
