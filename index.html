@@ -67,7 +67,18 @@ table.tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
 .btn.pri{background:var(--acc);color:#06142b;border-color:var(--acc);font-weight:700}
 dialog{background:var(--panel);color:var(--txt);border:1px solid var(--line);border-radius:14px;width:min(92vw,440px);padding:16px}
 dialog::backdrop{background:rgba(0,0,0,.6)}
-.hrow{display:flex;gap:6px;margin-bottom:6px}
+.hrow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.sk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.sk{background:var(--panel2);border:1px solid var(--line);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:2px}
+.sk.hot{border-color:var(--acc)}
+.skn{font-size:12px;color:var(--mut);line-height:1.25;min-height:30px}
+.sk b{font-size:28px;line-height:1.2}
+.sk.hot b::before{content:'🔥 '}
+.sk small{color:var(--mut);font-size:11px}
+.dchips{flex-basis:100%;display:flex;gap:5px}
+.dchip{flex:1;background:var(--panel2);color:var(--mut);border:1px solid var(--line);border-radius:8px;padding:6px 0;font:inherit;font-size:12px;cursor:pointer}
+.dchip.on{background:var(--acc);color:#06142b;border-color:var(--acc);font-weight:700}
+.g td.off{background:rgba(255,255,255,.04);color:#3a5f96;font-size:14px}
 .hrow input{flex:1;background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:9px;font:inherit}
 .hrow .x{background:var(--panel2);color:#ff8d8d;border:1px solid var(--line);border-radius:8px;width:38px;cursor:pointer}
 .hint{color:var(--mut);font-size:12px;margin:0 0 10px}
@@ -107,7 +118,7 @@ dialog::backdrop{background:rgba(0,0,0,.6)}
 
 <dialog id="dlg">
   <h3 style="margin-top:0">Mes habitudes</h3>
-  <p class="hint">Renomme (tu peux mettre un emoji), supprime ou ajoute. Supprimer une habitude l'enlève des stats.</p>
+  <p class="hint">Renomme (tu peux mettre un emoji), supprime ou ajoute. Sous chaque habitude, touche les jours où elle compte : les autres jours sont grisés et ignorés dans les stats et les séries.</p>
   <div id="hlist"></div>
   <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
     <button class="btn" type="button" data-act="addh">+ Ajouter</button>
@@ -137,6 +148,8 @@ const pad=n=>String(n).padStart(2,'0');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const pct=(a,b)=>b?Math.min(100,Math.round(a/b*100)):0;
 const $=s=>document.querySelector(s);
+const wdOf=k=>(new Date(+k.slice(0,4),+k.slice(5,7)-1,+k.slice(8,10)).getDay()+6)%7;
+const active=(h,k)=>!h.days||h.days.includes(wdOf(k));
 
 let state=null;
 try{state=JSON.parse(localStorage.getItem(KEY))}catch(e){}
@@ -173,7 +186,9 @@ let view=(()=>{
 })();
 
 const isDone=(k,id)=>(state.done[k]||[]).includes(id);
-const countDay=k=>{const a=state.done[k]||[];return state.habits.filter(h=>a.includes(h.id)).length};
+const countDay=k=>{const a=state.done[k]||[];return state.habits.filter(h=>active(h,k)&&a.includes(h.id)).length};
+const needDay=k=>state.habits.filter(h=>active(h,k)).length;
+const needSum=ks=>ks.reduce((s,k)=>s+needDay(k),0);
 function toggle(k,id){
   const arr=state.done[k]||(state.done[k]=[]);
   const i=arr.indexOf(id);
@@ -183,16 +198,18 @@ function toggle(k,id){
   save();
   queueSync();
 }
-function streaks(id){
+function streaks(h){
   let best=0,run=0;
   for(const k of ALL){
     if(k>TODAY)break;
-    if(isDone(k,id)){run++;best=Math.max(best,run)}else run=0;
+    if(!active(h,k))continue;
+    if(isDone(k,h.id)){run++;best=Math.max(best,run)}else run=0;
   }
   let cur=0;
-  let idx=ALL.filter(k=>k<=TODAY).length-1;
-  if(idx>=0&&!isDone(ALL[idx],id))idx--;
-  while(idx>=0&&isDone(ALL[idx],id)){cur++;idx--}
+  const past=ALL.filter(k=>k<=TODAY&&active(h,k));
+  let idx=past.length-1;
+  if(idx>=0&&past[idx]===TODAY&&!isDone(TODAY,h.id))idx--;
+  while(idx>=0&&isDone(past[idx],h.id)){cur++;idx--}
   return {cur,best};
 }
 
@@ -200,12 +217,17 @@ const tabs=()=>`<nav class="tabs" id="tabs">${months.map((x,i)=>`<button class="
 
 const donut=p=>`<div class="donut" style="--p:${p}"><div>${p}%</div></div>`;
 
+function streakCard(){
+  const t=state.habits.map(h=>({h,s:streaks(h)}));
+  return `<section class="card"><h2>🔥 Séries (jours de suite)</h2><div class="sk-grid">${t.map(({h,s})=>`<div class="sk ${s.cur>0?'hot':''}"><span class="skn">${esc(h.name)}</span><b>${s.cur}</b><small>jour${s.cur>1?'s':''} de suite · record ${s.best}</small></div>`).join('')}</div></section>`;
+}
+
 function renderMonth(){
   const M=months[view],H=state.habits,n=H.length;
   const el=M.keys.filter(k=>k<=TODAY).length;
   const doneTotal=M.keys.reduce((s,k)=>s+countDay(k),0);
-  const goal=n*M.days;
-  const p=pct(doneTotal,n*el);
+  const goal=needSum(M.keys);
+  const p=pct(doneTotal,needSum(M.keys.filter(k=>k<=TODAY)));
 
   const wk=[];
   M.keys.forEach((k,i)=>{
@@ -224,25 +246,28 @@ function renderMonth(){
     <tr>${M.keys.map((k,i)=>`<th class="d ${cls(k,i)}">${DAYS[(new Date(M.y,M.m,i+1).getDay()+6)%7]}</th>`).join('')}</tr>
     <tr>${M.keys.map((k,i)=>`<th class="d ${cls(k,i)}">${i+1}</th>`).join('')}</tr>
   </thead>`;
-  const body=`<tbody>${H.map(h=>`<tr><th class="hn">${esc(h.name)}</th>${M.keys.map((k,i)=>`<td class="${cls(k,i)}"><input type="checkbox" class="cb" data-k="${k}" data-h="${h.id}" ${isDone(k,h.id)?'checked':''} ${k>TODAY?'disabled':''} aria-label="${esc(h.name)} ${k}"></td>`).join('')}</tr>`).join('')}</tbody>`;
+  const body=`<tbody>${H.map(h=>`<tr><th class="hn">${esc(h.name)}</th>${M.keys.map((k,i)=>active(h,k)?`<td class="${cls(k,i)}"><input type="checkbox" class="cb" data-k="${k}" data-h="${h.id}" ${isDone(k,h.id)?'checked':''} ${k>TODAY?'disabled':''} aria-label="${esc(h.name)} ${k}"></td>`:`<td class="${cls(k,i)} off" title="Jour de repos">–</td>`).join('')}</tr>`).join('')}</tbody>`;
   const foot=`<tfoot><tr><th class="hn">Total du jour</th>${M.keys.map((k,i)=>`<td class="${cls(k,i)}">${k>TODAY?'':countDay(k)}</td>`).join('')}</tr></tfoot>`;
 
   const daily=`<div class="bars">${M.keys.map((k,i)=>{
-    const v=(k>TODAY||!n)?0:Math.round(countDay(k)/n*100);
+    const nd=needDay(k);
+    const v=(k>TODAY||!nd)?0:Math.round(countDay(k)/nd*100);
     return `<div class="bcol ${k===TODAY?'today':''}" title="${v}%"><div class="bar"><i style="height:${v}%"></i></div><span>${i+1}</span></div>`}).join('')}</div>`;
 
   const weekly=`<div class="bars big">${wk.map((w,j)=>{
     const days=w.map(i=>M.keys[i]).filter(k=>k<=TODAY);
     const d=days.reduce((s,k)=>s+countDay(k),0);
-    const v=pct(d,n*days.length);
+    const v=pct(d,needSum(days));
     return `<div class="bcol"><div class="bar"><i style="height:${v}%"></i></div><span>S${j+1}<br>${days.length?v+'%':'-'}</span></div>`}).join('')}</div>`;
 
   const rows=H.map(h=>{
-    const f=M.keys.filter(k=>isDone(k,h.id)).length;
-    const s=streaks(h.id);
-    return {h,f,p:pct(f,el),s};
+    const f=M.keys.filter(k=>active(h,k)&&isDone(k,h.id)).length;
+    const s=streaks(h);
+    const tot=M.keys.filter(k=>active(h,k)).length;
+    const ex=M.keys.filter(k=>k<=TODAY&&active(h,k)).length;
+    return {h,f,tot,p:pct(f,ex),s};
   });
-  const analysis=`<div class="tblw"><table class="tbl"><thead><tr><th>Habitude</th><th>Fait</th><th>Progression</th><th>%</th><th>🔥 Série</th><th>🏆 Record</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.h.name)}</td><td>${r.f}/${M.days}</td><td><div class="pb"><i style="width:${r.p}%"></i></div></td><td>${r.p}%</td><td>${r.s.cur} j</td><td>${r.s.best} j</td></tr>`).join('')}</tbody></table></div>`;
+  const analysis=`<div class="tblw"><table class="tbl"><thead><tr><th>Habitude</th><th>Fait</th><th>Progression</th><th>%</th><th>🔥 Série</th><th>🏆 Record</th></tr></thead><tbody>${rows.map(r=>`<tr><td>${esc(r.h.name)}</td><td>${r.f}/${r.tot}</td><td><div class="pb"><i style="width:${r.p}%"></i></div></td><td>${r.p}%</td><td>${r.s.cur} j</td><td>${r.s.best} j</td></tr>`).join('')}</tbody></table></div>`;
 
   const top=[...rows].sort((a,b)=>b.p-a.p||b.f-a.f);
   const rank=`<div class="rank">${top.map((r,i)=>`<div><em>${i+1}</em><span>${esc(r.h.name)}</span><b>${r.p}%</b></div>`).join('')}</div>`;
@@ -258,6 +283,7 @@ function renderMonth(){
       <div class="st"><small>Habitudes</small><b>${n}</b></div>
     </div>
   </div></section>
+  ${streakCard()}
   <section class="card"><h2>Grille du mois</h2><div class="gridwrap"><table class="g">${head}${body}${foot}</table></div></section>
   <section class="card"><h2>Progression quotidienne</h2>${daily}</section>
   <section class="card"><h2>Progression par semaine</h2>${weekly}</section>
@@ -269,18 +295,19 @@ function renderYear(){
   const H=state.habits,n=H.length;
   const elapsed=ALL.filter(k=>k<=TODAY).length;
   const doneTotal=ALL.reduce((s,k)=>s+countDay(k),0);
-  const goal=n*ALL.length;
-  const p=pct(doneTotal,n*elapsed);
+  const goal=needSum(ALL);
+  const p=pct(doneTotal,needSum(ALL.filter(k=>k<=TODAY)));
 
   const mb=`<div class="bars big">${months.map(M=>{
     const days=M.keys.filter(k=>k<=TODAY);
     const d=days.reduce((s,k)=>s+countDay(k),0);
-    const v=pct(d,n*days.length);
+    const v=pct(d,needSum(days));
     return `<div class="bcol"><div class="bar"><i style="height:${v}%"></i></div><span>${SHORT[M.m]}<br>${days.length?v+'%':'-'}</span></div>`}).join('')}</div>`;
 
   const rows=H.map(h=>{
-    const f=ALL.filter(k=>isDone(k,h.id)).length;
-    return {h,f,p:pct(f,elapsed),s:streaks(h.id)};
+    const f=ALL.filter(k=>active(h,k)&&isDone(k,h.id)).length;
+    const ex=ALL.filter(k=>k<=TODAY&&active(h,k)).length;
+    return {h,f,p:pct(f,ex),s:streaks(h)};
   }).sort((a,b)=>b.p-a.p||b.f-a.f);
 
   const tbl=`<div class="tblw"><table class="tbl"><thead><tr><th>#</th><th>Habitude</th><th>Fait</th><th>Progression</th><th>%</th><th>🔥 Série</th><th>🏆 Record</th></tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td><td>${esc(r.h.name)}</td><td>${r.f}</td><td><div class="pb"><i style="width:${r.p}%"></i></div></td><td>${r.p}%</td><td>${r.s.cur} j</td><td>${r.s.best} j</td></tr>`).join('')}</tbody></table></div>`;
@@ -297,6 +324,7 @@ function renderYear(){
       <div class="st"><small>Meilleure série</small><b>${bestStreak} j</b></div>
     </div>
   </div></section>
+  ${streakCard()}
   <section class="card"><h2>Progression par mois</h2>${mb}</section>
   <section class="card"><h2>Stats par habitude</h2>${tbl}</section>`;
 }
@@ -318,7 +346,7 @@ function show(v){
   window.scrollTo(0,0);
 }
 
-const hrow=(id,name)=>`<div class="hrow" data-id="${esc(id)}"><input value="${esc(name)}" maxlength="40"><button class="x" type="button" data-act="delh" aria-label="Supprimer">✕</button></div>`;
+const hrow=(id,name,days)=>`<div class="hrow" data-id="${esc(id)}"><input value="${esc(name)}" maxlength="40"><button class="x" type="button" data-act="delh" aria-label="Supprimer">✕</button><div class="dchips">${DAYS.map((d,i)=>`<button type="button" class="dchip ${!days||days.includes(i)?'on':''}" data-act="dchip" data-d="${i}">${d}</button>`).join('')}</div></div>`;
 
 document.addEventListener('change',e=>{
   const c=e.target.closest('.cb');
@@ -343,12 +371,18 @@ document.addEventListener('click',e=>{
   if(!b)return;
   const a=b.dataset.act;
   if(a==='view')show(b.dataset.v==='year'?'year':+b.dataset.v);
-  else if(a==='settings'){$('#hlist').innerHTML=state.habits.map(h=>hrow(h.id,h.name)).join('');$('#dlg').showModal();}
+  else if(a==='settings'){$('#hlist').innerHTML=state.habits.map(h=>hrow(h.id,h.name,h.days)).join('');$('#dlg').showModal();}
   else if(a==='addh'){$('#hlist').insertAdjacentHTML('beforeend',hrow('h'+Date.now()+Math.floor(Math.random()*1000),''));}
   else if(a==='delh'){b.closest('.hrow').remove();}
+  else if(a==='dchip'){b.classList.toggle('on');}
   else if(a==='cancel'){$('#dlg').close();}
   else if(a==='saveh'){
-    const hs=[...document.querySelectorAll('#hlist .hrow')].map(r=>({id:r.dataset.id,name:r.querySelector('input').value.trim()})).filter(h=>h.name);
+    const hs=[...document.querySelectorAll('#hlist .hrow')].map(r=>{
+      const days=[...r.querySelectorAll('.dchip.on')].map(c=>+c.dataset.d);
+      const o={id:r.dataset.id,name:r.querySelector('input').value.trim()};
+      if(days.length&&days.length<7)o.days=days;
+      return o;
+    }).filter(h=>h.name);
     if(!hs.length){alert('Garde au moins une habitude.');return;}
     state.habits=hs;state.ht=Date.now();save();$('#dlg').close();render();queueSync();
   }
